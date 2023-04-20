@@ -58,7 +58,7 @@ Es gibt verschiedene Versionen des Pinpads mit unterschiedlichen Pinbelegungen.
 
  Das von mir verwendete hat folgendes Pinout:
 
-![Keypad Pinout](/Pictures/keypad-pinout-small.jpg)
+![Keypad Pinout](/Pictures/keypad-pinout-small.png)
 
 Im Programmcode werden die Pins den Eingängen der HM Sensor Platine zugewiesen:
 ```
