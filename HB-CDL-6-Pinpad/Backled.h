@@ -68,11 +68,12 @@ class NoBackled {
 public:
 	uint8_t color[2], bright[2];
 
-	NoBackled() {}
+	NoBackled() { led.init(); }
 	~NoBackled() {}
 
 	void set_bright_mode(BACKLED::BRIGHT value) {
-			if (value == BACKLED::BRIGHT::TOUCHED) led.ledOn(millis2ticks(100));
+		//if (value == BACKLED::BRIGHT::TOUCHED) led.ledOn(millis2ticks(100));
+		if (value == BACKLED::BRIGHT::TOUCHED) led.set(LedStates::Mode::nack);
 	}
 	void set_color_mode(BACKLED::COLOR value) {}
 	void update() {}

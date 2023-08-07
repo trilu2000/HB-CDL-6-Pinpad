@@ -23,15 +23,15 @@
 #include "Backled.h"
 
 
-#define LED1_PIN 4
-#define LED2_PIN 5
+#define LED1_PIN 5
+#define LED2_PIN 4
 #define CONFIG_BUTTON_PIN 8
 
 // define only if a WS2812 led is implemented
 //#define BACKLED_PIN 0
 //#define NUMBER_LEDS 4
 
-#define BUZZER_PIN 0
+#define BUZZER_PIN 6
 
 // define keyboard pins for a 3x4 Pinpad
 #define C2_PIN A0
@@ -59,10 +59,10 @@ using namespace as;
 
 // define all device properties
 const struct DeviceInfo PROGMEM devinfo = {
-	{0x05, 0xcc, 0x55},     // Device ID
-	"HB00379910",           // Device Serial
-	//{0x05, 0xcc, 0x4a},   // Device ID
-	//"HB00379978",         // Device Serial
+	//{0x05, 0xcc, 0x55},     // Device ID
+	//"HB00379910",           // Device Serial
+	{0x05, 0xcc, 0x4a},   // Device ID
+	"HB00379978",         // Device Serial
 	{0xF6,0xA9},            // Device Model
   0x01,                   // Firmware Version
   as::DeviceType::PushButton, // Device Type
@@ -77,8 +77,8 @@ typedef AvrSPI<10, 11, 12, 13> SPIType;
 typedef Radio<SPIType,2> RadioType;
 typedef DualStatusLed<LED1_PIN, LED2_PIN> LedType;
 
-//typedef Buzzer<BUZZER_PIN> BuzzerType;
-typedef NoBuzzer BuzzerType;
+typedef Buzzer<BUZZER_PIN> BuzzerType;
+//typedef NoBuzzer BuzzerType;
 //typedef AskSin<LedType, NoBattery, RadioType, BuzzerType > HalType;
 typedef AskSin<LedType, BatterySensor, RadioType, BuzzerType > HalType;
 
@@ -347,15 +347,16 @@ public:
 
 	virtual void keydown() {
 		backled.set_bright_mode(BACKLED::BRIGHT::TOUCHED);											// flash light while key press
-		buzzer().on(millis2ticks(20));
+		buzzer().on(millis2ticks(70));
 	}
 
 	virtual void haskey(uint8_t k) {
 		// function is called by the input device each time a keypress was recognised
+		buzzer().off();
+		backled.set_bright_mode(BACKLED::BRIGHT::DIMMED);												// dim the background ligh
 		//DPRINT(F("key: 0x")); DHEXLN(k);
 
 		timeout.start();
-		backled.set_bright_mode(BACKLED::BRIGHT::DIMMED);												// dim the background light
 
 		if (k == 0x0c) {
 			DPRINT(F("cnl: ")); DPRINT(buffer.channel()); DPRINT(F(", pwd: ")); DHEXLN(buffer.password(), 8);
@@ -371,7 +372,8 @@ public:
 			// channel 20 to send a pairing string
 			// channel 99 to reprogram a slot
 			if (val_cnl) channel(val_cnl).sendMsg();
-			else if ((val_pwd == 0) && (buffer.channel()==20)) startPairing();
+			else if ((val_pwd == 0) && (buffer.channel() == 90)) startPairing();
+			else if ((val_pwd == 0) && (buffer.channel() == 92)) reset();
 
 			buzzer().on(millis2ticks(30), millis2ticks(50), 2);
 			clear();
@@ -397,6 +399,7 @@ void setup() {
 
   buttonISR(cfgBtn,CONFIG_BUTTON_PIN);
 	sdev.initDone();
+  DDEVINFO(sdev);
 
 	sdev.buzzer().on(millis2ticks(100), millis2ticks(50), 2);
 	//sdev.dumpSize();
